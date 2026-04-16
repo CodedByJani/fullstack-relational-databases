@@ -1,21 +1,29 @@
 const router = require("express").Router();
-const { fn, col } = require("sequelize");
-const { Blog } = require("../models");
+const { User, Blog } = require("../models");
 
 router.get("/", async (req, res, next) => {
   try {
-    const authors = await Blog.findAll({
-      attributes: [
-        "author",
-        [fn("count", col("id")), "articles"],
-        [fn("sum", col("likes")), "likes"],
-      ],
-      group: ["author"],
-      order: [[fn("sum", col("likes")), "DESC"]],
-      raw: true,
+    const users = await User.findAll({
+      include: {
+        model: Blog,
+      },
     });
 
-    res.json(authors);
+    const result = users.map((user) => {
+      const blogs = user.blogs || [];
+
+      const likes = blogs.reduce((sum, blog) => {
+        return sum + (blog.likes || 0);
+      }, 0);
+
+      return {
+        author: user.name,
+        blogs: blogs.length,
+        likes: likes,
+      };
+    });
+
+    res.json(result);
   } catch (error) {
     next(error);
   }
