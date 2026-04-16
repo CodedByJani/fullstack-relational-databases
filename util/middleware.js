@@ -15,6 +15,7 @@ const unknownEndpoint = (request, response) => {
 
 const tokenExtractor = (request, response, next) => {
   const authorization = request.get("authorization");
+
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
     try {
       request.decodedToken = jwt.verify(authorization.substring(7), SECRET);
@@ -22,7 +23,15 @@ const tokenExtractor = (request, response, next) => {
       return response.status(401).json({ error: "token invalid" });
     }
   } else {
-    return response.status(401).json({ error: "token missing" });
+    request.decodedToken = null;
+  }
+
+  next();
+};
+
+const requireAuth = (req, res, next) => {
+  if (!req.decodedToken) {
+    return res.status(401).json({ error: "token missing" });
   }
   next();
 };
@@ -43,13 +52,12 @@ const errorHandler = (error, request, response, next) => {
   }
 
   response.status(500).json({ error: error.message });
-
-  next(error);
 };
 
 module.exports = {
   requestLogger,
   unknownEndpoint,
   tokenExtractor,
+  requireAuth,
   errorHandler,
 };

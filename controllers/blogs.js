@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { Op } = require("sequelize");
 
 const { Blog, User } = require("../models");
-const { tokenExtractor } = require("../util/middleware");
+const { tokenExtractor, requireAuth } = require("../util/middleware");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -10,16 +10,8 @@ router.get("/", async (req, res, next) => {
 
     if (req.query.search) {
       where[Op.or] = [
-        {
-          title: {
-            [Op.iLike]: `%${req.query.search}%`,
-          },
-        },
-        {
-          author: {
-            [Op.iLike]: `%${req.query.search}%`,
-          },
-        },
+        { title: { [Op.iLike]: `%${req.query.search}%` } },
+        { author: { [Op.iLike]: `%${req.query.search}%` } },
       ];
     }
 
@@ -39,7 +31,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", tokenExtractor, async (req, res, next) => {
+router.post("/", tokenExtractor, requireAuth, async (req, res, next) => {
   try {
     const user = await User.findByPk(req.decodedToken.id);
 
@@ -58,34 +50,29 @@ router.put("/:id", async (req, res, next) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
 
-    if (blog) {
-      blog.likes = req.body.likes;
-      await blog.save();
-      res.json(blog);
-    } else {
-      res.status(404).end();
-    }
+    if (!blog) return res.status(404).end();
+
+    blog.likes = req.body.likes;
+    await blog.save();
+
+    res.json(blog);
   } catch (error) {
     next(error);
   }
 });
 
-router.delete("/:id", tokenExtractor, async (req, res, next) => {
+router.delete("/:id", tokenExtractor, requireAuth, async (req, res, next) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
 
-    if (blog) {
-      if (blog.userId !== req.decodedToken.id) {
-        return res
-          .status(403)
-          .json({ error: "only the creator can delete blogs" });
-      }
+    if (!blog) return res.status(404).end();
 
-      await blog.destroy();
-      res.status(204).end();
-    } else {
-      res.status(404).end();
+    if (blog.userId !== req.decodedToken.id) {
+      return res.status(403).json({ error: "only creator can delete blogs" });
     }
+
+    await blog.destroy();
+    res.status(204).end();
   } catch (error) {
     next(error);
   }

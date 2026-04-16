@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 const { PORT } = require("./util/config");
-const { connectToDatabase, sequelize } = require("./util/db");
+const { connectToDatabase } = require("./util/db");
 
 const {
   requestLogger,
@@ -35,8 +35,6 @@ app.use(errorHandler);
 const start = async () => {
   try {
     await connectToDatabase();
-
-    await sequelize.sync({ force: true });
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
