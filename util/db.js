@@ -19,7 +19,6 @@ const connectToDatabase = async () => {
   try {
     await sequelize.authenticate();
 
-    // 🔥 THIS FIXES "relation does not exist" IN GITHUB ACTIONS
     await sequelize.sync();
 
     console.log("connected to the database");

@@ -1,4 +1,3 @@
-// controllers/blogs.js
 const router = require("express").Router();
 const { Op } = require("sequelize");
 

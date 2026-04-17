@@ -8,15 +8,12 @@ let testData;
 let server;
 
 before(async () => {
-  // Start the server
   server = app.listen(3001, () => {
     console.log("Test server started on port 3001");
   });
 
-  // Wait for server to start
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Seed test data
   testData = await resetAndSeed();
 });
 
