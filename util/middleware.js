@@ -51,7 +51,16 @@ const errorHandler = (error, request, response, next) => {
     });
   }
 
-  response.status(500).json({ error: error.message });
+  // IMPORTANT: catch DB/foreign key/migration issues cleanly
+  if (error.name === "SequelizeForeignKeyConstraintError") {
+    return response.status(400).json({
+      error: "invalid reference (foreign key constraint)",
+    });
+  }
+
+  return response.status(500).json({
+    error: "internal server error",
+  });
 };
 
 module.exports = {

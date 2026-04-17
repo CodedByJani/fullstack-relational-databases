@@ -16,10 +16,16 @@ Blog.init(
     url: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     likes: {
       type: DataTypes.INTEGER,
@@ -27,19 +33,27 @@ Blog.init(
     },
     year: {
       type: DataTypes.INTEGER,
-      allowNull: true, // ✅ IMPORTANT FIX
-      defaultValue: new Date().getFullYear(),
+      allowNull: true,
       validate: {
         min: 1991,
         max: new Date().getFullYear(),
-        isInt: true,
+        isValidYear(value) {
+          if (
+            value !== null &&
+            (value < 1991 || value > new Date().getFullYear())
+          ) {
+            throw new Error(
+              `year must be between 1991 and ${new Date().getFullYear()}`,
+            );
+          }
+        },
       },
     },
   },
   {
     sequelize,
     underscored: true,
-    timestamps: false,
+    timestamps: true,
     modelName: "blog",
   },
 );

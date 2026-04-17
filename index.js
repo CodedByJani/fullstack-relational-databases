@@ -32,6 +32,7 @@ app.use("/api/reset", resetRouter);
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
+// ONLY START IF RUN DIRECTLY
 const start = async () => {
   try {
     await connectToDatabase();
@@ -44,4 +45,9 @@ const start = async () => {
   }
 };
 
-start();
+// 👇 IMPORTANT FIX
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;

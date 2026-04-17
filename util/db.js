@@ -3,6 +3,16 @@ const { DATABASE_URL } = require("./config");
 
 const sequelize = new Sequelize(DATABASE_URL, {
   dialect: "postgres",
+  logging: false,
+  dialectOptions:
+    process.env.NODE_ENV === "production" || process.env.CI
+      ? {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false,
+          },
+        }
+      : {},
 });
 
 const connectToDatabase = async () => {
@@ -10,11 +20,9 @@ const connectToDatabase = async () => {
     await sequelize.authenticate();
     console.log("Connected to the database");
   } catch (err) {
-    console.log("Failed to connect to the database");
-    return process.exit(1);
+    console.error("Failed to connect to the database:", err.message);
+    process.exit(1);
   }
-
-  return null;
 };
 
 module.exports = { connectToDatabase, sequelize };

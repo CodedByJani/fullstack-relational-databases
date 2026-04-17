@@ -1,3 +1,4 @@
+// migrations/xxxx_add_year_to_blogs.js
 const { DataTypes } = require("sequelize");
 
 module.exports = {
@@ -5,10 +6,9 @@ module.exports = {
     await queryInterface.addColumn("blogs", "year", {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 1991,
+      defaultValue: new Date().getFullYear(),
     });
   },
-
   down: async ({ context: queryInterface }) => {
     await queryInterface.removeColumn("blogs", "year");
   },
