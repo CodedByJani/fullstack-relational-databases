@@ -27,20 +27,12 @@ Blog.init(
     },
     year: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: new Date().getFullYear(), // ✅ FIX
+      allowNull: true, // ✅ IMPORTANT FIX
+      defaultValue: new Date().getFullYear(),
       validate: {
-        min: {
-          args: [1991],
-          msg: "year must be at least 1991",
-        },
-        max: {
-          args: [new Date().getFullYear()],
-          msg: "year cannot be in the future",
-        },
-        isInt: {
-          msg: "year must be an integer",
-        },
+        min: 1991,
+        max: new Date().getFullYear(),
+        isInt: true,
       },
     },
   },
