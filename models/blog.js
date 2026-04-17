@@ -16,16 +16,12 @@ Blog.init(
     url: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      validate: { notEmpty: true },
     },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      validate: { notEmpty: true },
     },
     likes: {
       type: DataTypes.INTEGER,
@@ -35,18 +31,9 @@ Blog.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
+        isInt: true,
         min: 1991,
         max: new Date().getFullYear(),
-        isValidYear(value) {
-          if (
-            value !== null &&
-            (value < 1991 || value > new Date().getFullYear())
-          ) {
-            throw new Error(
-              `year must be between 1991 and ${new Date().getFullYear()}`,
-            );
-          }
-        },
       },
     },
   },

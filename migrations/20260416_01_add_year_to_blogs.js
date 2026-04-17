@@ -1,14 +1,11 @@
-// migrations/xxxx_add_year_to_blogs.js
-const { DataTypes } = require("sequelize");
-
 module.exports = {
-  up: async ({ context: queryInterface }) => {
+  up: async ({ context: queryInterface, Sequelize }) => {
     await queryInterface.addColumn("blogs", "year", {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: new Date().getFullYear(),
+      type: Sequelize.INTEGER,
+      allowNull: true,
     });
   },
+
   down: async ({ context: queryInterface }) => {
     await queryInterface.removeColumn("blogs", "year");
   },
