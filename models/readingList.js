@@ -10,14 +10,19 @@ ReadingList.init(
       primaryKey: true,
       autoIncrement: true,
     },
+
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "user_id",
     },
+
     blogId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "blog_id",
     },
+
     read: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -25,9 +30,10 @@ ReadingList.init(
   },
   {
     sequelize,
+    modelName: "readingList",
+    tableName: "reading_lists",
     underscored: true,
     timestamps: true,
-    modelName: "reading_list",
   },
 );
 

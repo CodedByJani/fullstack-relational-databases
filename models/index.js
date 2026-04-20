@@ -8,11 +8,13 @@ User.belongsToMany(Blog, {
   foreignKey: "userId",
 });
 
+// BLOG -> USER
 Blog.belongsToMany(User, {
   through: ReadingList,
   foreignKey: "blogId",
 });
 
+// normal relation
 User.hasMany(Blog);
 Blog.belongsTo(User);
 

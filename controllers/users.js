@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 const { User, Blog } = require("../models");
 
-// GET ALL USERS
 router.get("/", async (req, res, next) => {
   try {
     const users = await User.findAll({
@@ -20,7 +19,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// GET USER BY ID (WITH READING LIST)
 router.get("/:id", async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -28,13 +26,11 @@ router.get("/:id", async (req, res, next) => {
       include: [
         {
           model: Blog,
-          attributes: { exclude: ["userId"] },
-        },
-        {
-          model: Blog,
           as: "readings",
           attributes: { exclude: ["userId"] },
-          through: { attributes: [] },
+          through: {
+            attributes: ["id", "read"],
+          },
         },
       ],
     });
@@ -43,17 +39,35 @@ router.get("/:id", async (req, res, next) => {
       return res.status(404).json({ error: "user not found" });
     }
 
+    // Transform the response
+    const userJSON = user.toJSON();
+    const readings = userJSON.readings.map((blog) => {
+      return {
+        id: blog.id,
+        author: blog.author,
+        url: blog.url,
+        title: blog.title,
+        likes: blog.likes,
+        year: blog.year,
+        readinglists: [
+          {
+            id: blog.readingList.id,
+            read: blog.readingList.read,
+          },
+        ],
+      };
+    });
+
     res.json({
-      name: user.name,
-      username: user.username,
-      readings: user.readings || [],
+      name: userJSON.name,
+      username: userJSON.username,
+      readings,
     });
   } catch (error) {
     next(error);
   }
 });
 
-// CREATE USER
 router.post("/", async (req, res, next) => {
   try {
     const { username, name, password } = req.body;
@@ -76,13 +90,10 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// UPDATE USER
 router.put("/:username", async (req, res, next) => {
   try {
     const user = await User.findOne({
-      where: {
-        username: req.params.username,
-      },
+      where: { username: req.params.username },
     });
 
     if (!user) {
