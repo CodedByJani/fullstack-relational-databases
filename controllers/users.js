@@ -3,14 +3,14 @@ const bcrypt = require("bcryptjs");
 
 const { User, Blog } = require("../models");
 
+// GET ALL USERS
 router.get("/", async (req, res, next) => {
   try {
     const users = await User.findAll({
+      attributes: { exclude: ["passwordHash"] },
       include: {
         model: Blog,
-        attributes: {
-          exclude: ["userId"],
-        },
+        attributes: { exclude: ["userId"] },
       },
     });
 
@@ -20,6 +20,40 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// GET USER BY ID (WITH READING LIST)
+router.get("/:id", async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ["passwordHash"] },
+      include: [
+        {
+          model: Blog,
+          attributes: { exclude: ["userId"] },
+        },
+        {
+          model: Blog,
+          as: "readings",
+          attributes: { exclude: ["userId"] },
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "user not found" });
+    }
+
+    res.json({
+      name: user.name,
+      username: user.username,
+      readings: user.readings || [],
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// CREATE USER
 router.post("/", async (req, res, next) => {
   try {
     const { username, name, password } = req.body;
@@ -42,6 +76,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+// UPDATE USER
 router.put("/:username", async (req, res, next) => {
   try {
     const user = await User.findOne({
@@ -50,13 +85,14 @@ router.put("/:username", async (req, res, next) => {
       },
     });
 
-    if (user) {
-      user.name = req.body.name;
-      await user.save();
-      res.json(user);
-    } else {
-      res.status(404).end();
+    if (!user) {
+      return res.status(404).end();
     }
+
+    user.name = req.body.name;
+    await user.save();
+
+    res.json(user);
   } catch (error) {
     next(error);
   }

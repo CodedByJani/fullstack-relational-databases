@@ -41,7 +41,11 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", tokenExtractor, async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.decodedToken.id);
+    const user = await User.findByPk(req.decodedToken?.id);
+
+    if (!user) {
+      return res.status(401).json({ error: "invalid or missing token" });
+    }
 
     const blog = await Blog.create({
       ...req.body,
@@ -75,18 +79,18 @@ router.delete("/:id", tokenExtractor, async (req, res, next) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
 
-    if (blog) {
-      if (blog.userId !== req.decodedToken.id) {
-        return res
-          .status(403)
-          .json({ error: "only the creator can delete blogs" });
-      }
-
-      await blog.destroy();
-      res.status(204).end();
-    } else {
-      res.status(404).end();
+    if (!blog) {
+      return res.status(404).end();
     }
+
+    if (blog.userId !== req.decodedToken?.id) {
+      return res
+        .status(403)
+        .json({ error: "only the creator can delete blogs" });
+    }
+
+    await blog.destroy();
+    res.status(204).end();
   } catch (error) {
     next(error);
   }
