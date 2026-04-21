@@ -30,7 +30,6 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// PUT /api/readinglists/:id - Mark blog as read/unread
 router.put("/:id", tokenExtractor, requireAuth, async (req, res, next) => {
   try {
     const readingListEntry = await ReadingList.findByPk(req.params.id);
@@ -46,7 +45,6 @@ router.put("/:id", tokenExtractor, requireAuth, async (req, res, next) => {
         .json({ error: "only the creator can update this entry" });
     }
 
-    // Update the read status
     readingListEntry.read = req.body.read;
     await readingListEntry.save();
 

@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 
-const { User, Blog } = require("../models");
+const { User, Blog, ReadingList } = require("../models");
 
+// GET ALL USERS
 router.get("/", async (req, res, next) => {
   try {
     const users = await User.findAll({
@@ -19,6 +20,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// GET USER BY ID (READING LIST WITH FILTERING)
 router.get("/:id", async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -39,9 +41,9 @@ router.get("/:id", async (req, res, next) => {
       return res.status(404).json({ error: "user not found" });
     }
 
-    // Transform the response
-    const userJSON = user.toJSON();
-    const readings = userJSON.readings.map((blog) => {
+    // Transform the response and filter by read status if query parameter provided
+    let userJSON = user.toJSON();
+    let readings = userJSON.readings.map((blog) => {
       return {
         id: blog.id,
         author: blog.author,
@@ -58,6 +60,14 @@ router.get("/:id", async (req, res, next) => {
       };
     });
 
+    // Filter by read status if query parameter is provided
+    if (req.query.read !== undefined) {
+      const readValue = req.query.read === "true";
+      readings = readings.filter(
+        (blog) => blog.readinglists[0].read === readValue,
+      );
+    }
+
     res.json({
       name: userJSON.name,
       username: userJSON.username,
@@ -68,6 +78,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
+// CREATE USER
 router.post("/", async (req, res, next) => {
   try {
     const { username, name, password } = req.body;
@@ -90,6 +101,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+// UPDATE USER
 router.put("/:username", async (req, res, next) => {
   try {
     const user = await User.findOne({
