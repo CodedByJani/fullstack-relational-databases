@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("./config");
+const { Session, User } = require("../models");
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -13,12 +14,24 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
-const tokenExtractor = (request, response, next) => {
+const tokenExtractor = async (request, response, next) => {
   const authorization = request.get("authorization");
 
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    const token = authorization.substring(7);
     try {
-      request.decodedToken = jwt.verify(authorization.substring(7), SECRET);
+      request.decodedToken = jwt.verify(token, SECRET);
+      request.token = token;
+
+      const session = await Session.findOne({ where: { token } });
+      if (!session) {
+        return response.status(401).json({ error: "session expired" });
+      }
+
+      const user = await User.findByPk(request.decodedToken.id);
+      if (!user || user.disabled) {
+        return response.status(401).json({ error: "account disabled" });
+      }
     } catch (error) {
       return response.status(401).json({ error: "token invalid" });
     }
@@ -51,7 +64,6 @@ const errorHandler = (error, request, response, next) => {
     });
   }
 
-  // IMPORTANT: catch DB/foreign key/migration issues cleanly
   if (error.name === "SequelizeForeignKeyConstraintError") {
     return response.status(400).json({
       error: "invalid reference (foreign key constraint)",

@@ -16,6 +16,7 @@ const loginRouter = require("./controllers/login");
 const authorsRouter = require("./controllers/authors");
 const resetRouter = require("./controllers/reset");
 const readingListsRouter = require("./controllers/readingLists");
+const logoutRouter = require("./controllers/logout");
 
 app.use(express.json());
 app.use(requestLogger);
@@ -30,11 +31,11 @@ app.use("/api/login", loginRouter);
 app.use("/api/authors", authorsRouter);
 app.use("/api/reset", resetRouter);
 app.use("/api/readinglists", readingListsRouter);
+app.use("/api/logout", logoutRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
-// ONLY START IF RUN DIRECTLY
 const start = async () => {
   try {
     await connectToDatabase();
