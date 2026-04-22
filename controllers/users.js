@@ -41,7 +41,6 @@ router.get("/:id", async (req, res, next) => {
       return res.status(404).json({ error: "user not found" });
     }
 
-    // Transform the response and filter by read status if query parameter provided
     let userJSON = user.toJSON();
     let readings = userJSON.readings.map((blog) => {
       return {
@@ -51,20 +50,17 @@ router.get("/:id", async (req, res, next) => {
         title: blog.title,
         likes: blog.likes,
         year: blog.year,
-        readinglists: [
-          {
-            id: blog.readingList.id,
-            read: blog.readingList.read,
-          },
-        ],
+        reading_list: {
+          id: blog.readingList.id,
+          read: blog.readingList.read,
+        },
       };
     });
 
-    // Filter by read status if query parameter is provided
     if (req.query.read !== undefined) {
       const readValue = req.query.read === "true";
       readings = readings.filter(
-        (blog) => blog.readinglists[0].read === readValue,
+        (blog) => blog.reading_list.read === readValue,
       );
     }
 

@@ -14,17 +14,17 @@ router.post("/", async (req, res, next) => {
     const blog = await Blog.findByPk(blogId);
 
     if (!user || !blog) {
-      return res.status(404).json({
-        error: "user or blog not found",
-      });
+      return res.status(404).json({ error: "user or blog not found" });
     }
 
-    const readingList = await ReadingList.create({
-      userId,
-      blogId,
-    });
+    const readingList = await ReadingList.create({ userId, blogId });
 
-    res.json(readingList);
+    res.json({
+      id: readingList.id,
+      blog_id: readingList.blogId,
+      user_id: readingList.userId,
+      read: readingList.read,
+    });
   } catch (error) {
     next(error);
   }
@@ -38,11 +38,8 @@ router.put("/:id", tokenExtractor, requireAuth, async (req, res, next) => {
       return res.status(404).json({ error: "reading list entry not found" });
     }
 
-    // Check if the reading list entry belongs to the logged-in user
     if (readingListEntry.userId !== req.decodedToken.id) {
-      return res
-        .status(403)
-        .json({ error: "only the creator can update this entry" });
+      return res.status(401).json({ error: "unauthorized" });
     }
 
     readingListEntry.read = req.body.read;

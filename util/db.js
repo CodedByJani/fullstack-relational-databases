@@ -19,7 +19,7 @@ const connectToDatabase = async () => {
   try {
     await sequelize.authenticate();
 
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 
     console.log("connected to the database");
   } catch (err) {
